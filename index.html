@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live BTC Buy/Sell Signal</title>
+<style>
+  :root{--bg:#0b0e14;--panel:#131722;--buy:#00c896;--sell:#ff5c5c;--text:#e6e9ef;--muted:#8a93a6}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:16px}
+  h1{font-size:1.2rem;margin:0 0 4px}
+  p.sub{color:var(--muted);font-size:0.85rem;margin:0 0 16px}
+  .panel{background:var(--panel);border-radius:12px;padding:14px;margin-bottom:14px}
+  canvas{width:100%;height:auto;border-radius:8px}
+  .status{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .price{font-size:1.6rem;font-weight:700}
+  .badge{padding:4px 12px;border-radius:20px;font-weight:700;font-size:0.85rem}
+  .badge.buy{background:rgba(0,200,150,.15);color:var(--buy)}
+  .badge.sell{background:rgba(255,92,92,.15);color:var(--sell)}
+  .badge.wait{background:rgba(138,147,166,.15);color:var(--muted)}
+  .signals{max-height:200px;overflow-y:auto;font-size:0.85rem}
+  .sig-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #222838}
+  .err{color:var(--sell);font-size:0.85rem}
+  button{background:#4dabf7;color:#04121f;border:none;border-radius:8px;padding:10px 16px;font-weight:600;width:100%}
+</style>
+</head>
+<body>
+  <h1>📈 Live BTC/USDT — EMA9/EMA21 Signal</h1>
+  <p class="sub">Data seedha Binance se (free, live).</p>
+
+  <div class="panel">
+    <div class="status">
+      <div class="price" id="priceBox">Loading...</div>
+      <div class="badge wait" id="statusBadge">WAIT</div>
+    </div>
+    <canvas id="chart" width="700" height="300"></canvas>
+    <div id="errBox" class="err"></div>
+  </div>
+
+  <div class="panel">
+    <button onclick="load()">🔄 Refresh</button>
+  </div>
+
+  <div class="panel">
+    <strong>Recent Signals (15m candles):</strong>
+    <div class="signals" id="signalList"></div>
+  </div>
+
+<script>
+function ema(data, period){
+  const k = 2/(period+1);
+  let out=[data[0]];
+  for(let i=1;i<data.length;i++) out.push(data[i]*k + out[i-1]*(1-k));
+  return out;
+}
+
+async function load(){
+  const errBox = document.getElementById('errBox');
+  errBox.textContent = '';
+  try{
+    const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=15m&limit=100');
+    const raw = await res.json();
+    const closes = raw.map(c => parseFloat(c[4]));
+    const e1 = ema(closes, 9);
+    const e2 = ema(closes, 21);
+
+    const signals = [];
+    for(let i=1;i<closes.length;i++){
+      if(e1[i-1] <= e2[i-1] && e1[i] > e2[i]) signals.push({i, type:'BUY', price:closes[i]});
+      if(e1[i-1] >= e2[i-1] && e1[i] < e2[i]) signals.push({i, type:'SELL', price:closes[i]});
+    }
+
+    document.getElementById('priceBox').textContent = '$' + closes[closes.length-1].toFixed(2);
+    const badge = document.getElementById('statusBadge');
+    if(e1[e1.length-1] > e2[e2.length-1]){ badge.textContent='BUY ZONE'; badge.className='badge buy'; }
+    else { badge.textContent='SELL ZONE'; badge.className='badge sell'; }
+
+    draw(closes, e1, e2, signals);
+    renderList(signals);
+  }catch(e){
+    errBox.textContent = 'Data load nahi hui. Internet check karein. (' + e.message + ')';
+  }
+}
+
+function draw(prices, e1, e2, signals){
+  const cv = document.getElementById('chart');
+  const ctx = cv.getContext('2d');
+  const W=cv.width, H=cv.height, pad=20;
+  ctx.clearRect(0,0,W,H);
+  const all = prices.concat(e1,e2);
+  const min=Math.min(...all), max=Math.max(...all);
+  const x = i => pad + i*(W-2*pad)/(prices.length-1);
+  const y = v => H-pad - (v-min)*(H-2*pad)/(max-min);
+  function line(arr,color,w){
+    ctx.beginPath();
+    arr.forEach((v,i)=> i===0?ctx.moveTo(x(i),y(v)):ctx.lineTo(x(i),y(v)));
+    ctx.strokeStyle=color; ctx.lineWidth=w; ctx.stroke();
+  }
+  line(prices,'#4dabf7',2);
+  line(e1,'#7bd88f',1.5);
+  line(e2,'#ff9f43',1.5);
+  signals.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(x(s.i), y(s.price), 5, 0, Math.PI*2);
+    ctx.fillStyle = s.type==='BUY' ? '#00c896' : '#ff5c5c';
+    ctx.fill();
+  });
+}
+
+function renderList(signals){
+  const el = document.getElementById('signalList');
+  if(!signals.length){ el.innerHTML = 'Is 100 candles mein koi crossover nahi mila.'; return; }
+  el.innerHTML = signals.slice().reverse().map(s=>`
+    <div class="sig-row"><span>${s.type}</span><span>$${s.price.toFixed(2)}</span></div>`).join('');
+}
+
+load();
+</script>
+</body>
+</html>
