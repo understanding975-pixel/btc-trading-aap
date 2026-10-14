@@ -2,7 +2,8 @@
 <html lang="ur">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' https: data:; connect-src https://api.binance.com https://api.mexc.com https://api.bybit.com https://www.okx.com https://api.bitget.com https://api.kucoin.com https://api.gateio.ws https://api-spot.weex.com https://*.workers.dev; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' https: data:; connect-src https://api.binance.com https://api.mexc.com https://api.bybit.com https://www.okx.com https://api.bitget.com https://api.kucoin.com https://api.gateio.ws https://api-spot.weex.com https://*.workers.dev; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<!-- Security: ye CSP sirf upar likhe exchanges aur apni files se connection allow karti hai. Naya exchange/proxy jodein to uska link connect-src mein bhi daalein. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.json">
 <script>
@@ -11,7 +12,7 @@
 <meta name="theme-color" content="#0b0e14">
 <title>Live Crypto Buy/Sell Signal</title>
 <style>
-:root{--bg:#0b0e14;--panel:#131722;--buy:#00c896;--sell:#ff5c5c;--text:#e8ecf3;--muted:#8b93a7;--blue:#4facfe}
+:root{--up:#0ecb81;--dn:#f6465d;--bg:#0b0e14;--panel:#131722;--buy:#00c896;--sell:#ff5c5c;--text:#e8ecf3;--muted:#8b93a7;--blue:#4facfe}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:16px}
@@ -35,7 +36,10 @@ p.sub{color:var(--muted);font-size:.85rem;margin:0 0 12px}
 .badge{padding:4px 12px;border-radius:20px;font-weight:700;font-size:.85rem}
 .buy{background:#0d3a31;color:var(--buy)}
 .sell{background:#3a1717;color:var(--sell)}
-canvas{width:100%;height:150px;display:block;margin-top:8px}
+canvas{width:100%;height:150px;display:block;margin-top:8px;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.cw{position:relative}
+.now{display:none;position:absolute;right:58px;bottom:24px;border:1px solid #2b3350;background:#161c2b;color:#eaecef;border-radius:14px;padding:3px 10px;font-size:.72rem;font-weight:700}
+.hint{font-size:.68rem;color:#8b93a7;margin:6px 0 0;text-align:center}
 button.r{width:100%;border:0;border-radius:12px;padding:8px;background:var(--blue);color:#06121f;font-weight:700;font-size:1rem}
 .panel b{font-size:1.17rem;display:block}
 .sig{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1f2535}
@@ -52,7 +56,7 @@ button.r{width:100%;border:0;border-radius:12px;padding:8px;background:var(--blu
 .pr{text-align:right;font-weight:700}
 .chg{text-align:right}
 .chg span{display:inline-block;min-width:66px;padding:7px 4px;border-radius:8px;text-align:center;font-weight:700;color:#fff;font-size:.82rem}
-.up{background:#0ecb81}.dn{background:#f6465d}
+.up{background:var(--up)}.dn{background:var(--dn)}
 
 body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 button.r{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(135deg,#4facfe,#2b6df6);color:#fff;box-shadow:0 4px 14px rgba(43,109,246,.35);transition:transform .15s}
@@ -77,8 +81,9 @@ button.r:active{transform:scale(.97)}
 .sign{display:block;text-align:center;text-decoration:none;font-weight:700;font-size:.85rem;color:#ffd75e;background:rgba(240,185,11,.08);border:1px solid rgba(240,185,11,.35);padding:9px;border-radius:12px;margin-bottom:10px}
 .qs{width:100%;background:#0e1220;border:1px solid #2a3350;border-radius:12px;color:var(--text);padding:11px 12px;font-size:.92rem;margin-bottom:8px}
 .qs:focus{outline:0;border-color:var(--blue)}
-.srt{display:flex;gap:6px;margin-bottom:8px}
-.sb{flex:none;border:1px solid #2a3350;background:none;color:var(--muted);border-radius:8px;padding:5px 12px;font-size:.78rem;font-weight:700}
+.srt{display:flex;gap:5px;margin-bottom:8px;overflow-x:auto}
+.srt::-webkit-scrollbar{display:none}
+.sb{flex:0 0 auto;border:1px solid #2a3350;background:none;color:var(--muted);border-radius:8px;padding:5px 9px;font-size:.76rem;font-weight:700}
 .sb.on{background:#1f2b4a;color:#fff;border-color:var(--blue)}
 .cl{background:var(--panel);border-radius:16px;padding:4px 12px}
 .ch{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:8px;color:var(--muted);font-size:.7rem;padding:10px 0 6px}
@@ -93,7 +98,7 @@ button.r:active{transform:scale(.97)}
 .cp{text-align:right;font-weight:700;font-size:.92rem}
 .cg{text-align:right}
 .cg span{display:inline-block;min-width:66px;padding:7px 4px;border-radius:8px;text-align:center;font-weight:700;color:#fff;font-size:.8rem}
-.cg .u{background:#0ecb81}.cg .d{background:#f6465d}
+.cg .u{background:var(--up)}.cg .d{background:var(--dn)}
 .empty{padding:22px 8px;text-align:center;color:var(--muted);font-size:.85rem}
 .empty button{margin-top:10px;border:0;border-radius:10px;padding:9px 16px;background:#1f2b4a;color:#fff;font-weight:700}
 .disc{color:var(--muted);font-size:.7rem;text-align:center;margin:12px 4px}
@@ -107,6 +112,31 @@ button.r:active{transform:scale(.97)}
 #nav i img{width:100%;height:100%;object-fit:cover}
 #nav button.on{color:var(--blue);text-shadow:0 0 10px rgba(79,172,254,.7)}
 #nav button.on i{opacity:1;box-shadow:0 0 0 2px var(--blue),0 0 14px rgba(79,172,254,.8);transform:scale(1.08)}
+
+/* ===== Settings / docs / favorites / colors / rtl ===== */
+body.inv{--up:#f6465d;--dn:#0ecb81;--buy:#ff5c5c;--sell:#00c896}
+body.inv .buy{background:#3a1717}body.inv .sell{background:#0d3a31}
+.rfb.gear{background:#1a2030;box-shadow:none;border:1px solid #2a3350;font-size:1.15rem;margin-right:2px}
+.st{flex:none;margin:0 -4px 0 -6px;padding:8px 6px;font-size:1.1rem;line-height:1;color:#566079}
+.st.on{color:#f0b90b}
+.sh{color:var(--muted);font-size:.72rem;font-weight:700;margin:18px 2px 0;text-transform:uppercase;letter-spacing:.04em}
+.sh+.panel{margin-top:8px}
+.ol{color:var(--muted);font-size:.78rem;margin:14px 0 7px}
+.ol:first-child{margin-top:0}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.lrs{padding:2px 14px}
+.lr{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;background:none;border:0;border-top:1px solid #1f2535;color:var(--text);padding:14px 0;font-size:.95rem;text-align:start;text-decoration:none;font-family:inherit}
+.lr:first-child{border-top:0}
+.lr span:last-child{color:var(--muted);font-size:.85rem;overflow:hidden;text-overflow:ellipsis}
+.doc{line-height:1.65;font-size:.9rem}
+.doc p,.doc li{color:#c7ccd1}
+.doc h3{font-size:1rem;margin:16px 0 6px;color:#f0b90b}
+.doc h3:first-child{margin-top:0}
+.doc b{font-size:inherit;display:inline}
+.doc ul{padding-inline-start:20px;margin:6px 0}
+.rtl #setView,.rtl #docView,.rtl .disc,.rtl .hint,.rtl .sub,.rtl #title,.rtl .empty,.rtl .err,.rtl .panel>b{direction:rtl}
+.rtl .lr span:first-child{text-align:right}
+.rtl .ar{display:inline-block;transform:scaleX(-1)}
 </style>
 </head>
 <body>
@@ -116,31 +146,45 @@ button.r:active{transform:scale(.97)}
   <div class="xh">
     <div class="xb" id="xb"></div>
     <div class="xt"><div class="xn" id="xn"></div><div class="xs"><span class="dot" id="dot"></span><span id="xs">--</span></div></div>
+    <button class="rfb gear" id="gear" aria-label="Settings">⚙️</button>
     <button class="rfb" id="rfl" aria-label="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
   </div>
   <a class="sign" id="ref" target="_blank" rel="noopener"></a>
-  <input class="qs" id="q" placeholder="🔍 Coin dhoondein (BTC, ETH, SOL...)" autocomplete="off">
+  <input class="qs" id="q" data-ph="search_ph" placeholder="🔍" autocomplete="off">
   <div class="srt" id="srt"></div>
   <div class="cl">
-    <div class="ch"><span>Coin / Volume</span><span>Last Price</span><span>24h chg%</span></div>
+    <div class="ch"><span data-i="h_coin"></span><span data-i="h_price"></span><span data-i="h_chg"></span></div>
     <div id="rows"></div>
   </div>
-  <p class="disc">Prices exchange ki public API se aati hain. Ye financial advice nahi hai, trading mein nuqsan ho sakta hai.</p>
+  <p class="disc" data-i="disc"></p>
 </div>
 
 <!-- ===== Chart page ===== -->
 <div id="chartView" style="display:none">
   <h1 id="title"></h1>
-  <div class="subrow"><p class="sub">Chart data Binance se (free, live).</p><button class="back" id="back"></button></div>
+  <div class="subrow"><p class="sub" data-i="sub_chart"></p><button class="back" id="back"></button></div>
   <div class="row" id="tfs"></div>
   <div class="row" id="inds"></div>
   <div class="panel">
     <div class="top"><div class="price" id="price">--</div><div class="badge" id="zone">--</div></div>
-    <canvas id="c"></canvas>
+    <div class="cw"><canvas id="c"></canvas><button class="now" id="now" data-i="latest"></button></div>
     <div class="err" id="err"></div>
+    <p class="hint" data-i="hint"></p>
   </div>
-  <div class="panel"><button class="r" id="rf"><svg class="ri" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Refresh</button></div>
-  <div class="panel"><b>Recent Signals:</b><div id="sigs"></div></div>
+  <div class="panel"><button class="r" id="rf"><svg class="ri" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span data-i="refresh"></span></button></div>
+  <div class="panel"><b data-i="recent"></b><div id="sigs"></div></div>
+</div>
+
+<!-- ===== Settings page ===== -->
+<div id="setView" style="display:none">
+  <div class="subrow"><h1 data-i="settings"></h1><button class="back" data-back>←</button></div>
+  <div id="setBody"></div>
+</div>
+
+<!-- ===== Info page (privacy / disclaimer / referral) ===== -->
+<div id="docView" style="display:none">
+  <div class="subrow"><h1 id="docTitle"></h1><button class="back" data-back>←</button></div>
+  <div class="panel" id="docBody"></div>
 </div>
 
 <nav id="nav"></nav>
@@ -153,10 +197,10 @@ button.r:active{transform:scale(.97)}
    logo = agar kisi exchange ka logo image URL daalna ho (khali = rang wala badge).
    ============================================================ */
 const EXS=[
- {id:'binance',name:'Binance',ini:'B', color:'#f3ba2f',logo:'',ref:'https://www.binance.com/'},
+ {id:'binance',name:'Binance',ini:'B', color:'#f3ba2f',logo:'',ref:'https://www.binance.com/register?ref=GRO_28502_61LPK'},
  {id:'bybit',  name:'Bybit',  ini:'By',color:'#f7a600',logo:'',ref:'https://www.bybit.com/'},
  {id:'mexc',   name:'MEXC',   ini:'M', color:'#2e6bf0',logo:'',ref:'https://www.mexc.com/'},
- {id:'weex',   name:'WEEX',   ini:'W', color:'#18c26a',logo:'',ref:'https://www.weex.com/'},
+ {id:'weex',   name:'WEEX',   ini:'W', color:'#18c26a',logo:'',ref:'https://weex.com/register?vipCode=1bkx5'},
  {id:'okx',    name:'OKX',    ini:'O', color:'#2b2f3a',logo:'',ref:'https://www.okx.com/'},
  {id:'bitget', name:'Bitget', ini:'Bg',color:'#00b7b3',logo:'',ref:'https://www.bitget.com/'},
  {id:'kucoin', name:'KuCoin', ini:'K', color:'#23af91',logo:'',ref:'https://www.kucoin.com/'},
@@ -164,10 +208,25 @@ const EXS=[
 ];
 const TFS=['1m','5m','15m','1h','4h','1d'];
 const COL={BTC:'#f7931a',ETH:'#627eea',BNB:'#f3ba2f',SOL:'#9945ff',XRP:'#23292f',DOGE:'#c2a633',ADA:'#0033ad',TRX:'#eb0029'};
-let ex='binance',coin='BTC',tf='5m',view='list',lastD=null,sort='vol';
+/* ---------- Languages & settings ---------- */
+const LANGS=[['rur','Roman Urdu'],['en','English'],['ur','اردو'],['ar','العربية'],['hi','हिन्दी'],['tr','Türkçe'],['id','Indonesia']];
+const RTL=new Set(['ur','ar']);
+const SPD=[[5,13],[9,21],[21,50]];
+const MAIL='Cryptodevappadmin@gmail.com',VER='2.0';
+const I18N={"en":{"search_ph":"🔍 Search coin (BTC, ETH, SOL...)","h_coin":"Coin / Volume","h_price":"Last Price","h_chg":"24h chg%","disc":"Prices come from each exchange's public API. This is not financial advice; trading can cause losses.","sub_chart":"Chart data from Binance (free, live).","hint":"Drag the chart to see older candles · pinch with two fingers to zoom · tap a candle for time and price","latest":"Latest ›|","refresh":"Refresh","recent":"Recent Signals:","title":"📈 Live {c}/USDT — Candlestick Signal","ref_btn":"🎁 Open a {x} account (referral link)","s_vol":"🔥 Volume","s_up":"📈 Gainers","s_dn":"📉 Losers","s_fav":"⭐ Favorites","loading":"Loading…","live":"Live · {time} · {n} coins","no_data":"No data","old_data":"Old data (refresh failed)","err_exch":"⚠️ Live data from {x} is not available.<br>The exchange may be blocking browser requests, or there is an internet problem.","retry":"Try again","no_coin":"No coin found","no_fav":"No favorites yet. Tap ☆ next to a coin to add it.","err_chart":"Chart data not found. This coin may not be on Binance, or check your internet.","no_signal":"No signal yet","buy_zone":"BUY ZONE","sell_zone":"SELL ZONE","settings":"Settings","set_lang":"Language","set_chart":"Chart","set_tf":"Default timeframe","set_ind":"Indicators","set_candles":"Candles shown","set_speed":"Signal speed","spd_fast":"Fast","spd_norm":"Normal","spd_slow":"Slow","set_display":"Display","set_colors":"Colors","col_gr":"Green up / Red down","col_rg":"Red up / Green down","set_auto":"Auto refresh","on":"On","off":"Off","set_sort":"Default list order","set_about":"About","privacy":"Privacy Policy","disclaimer":"Disclaimer","refnote":"Referral disclosure","contact":"Contact us","version":"Version","reset":"Reset settings","reset_ok":"Reset all settings to default?","priv_sum_h":"In short","ps1":"No account, no login, and no personal data is collected.","ps2":"Only simple settings (language, chart options, favorites) are saved on your phone.","ps3":"Prices come from public exchange data; we never ask for passwords or API keys.","ps4":"Not financial advice. Referral links may earn us a commission.","priv_full_h":"Full policy (English)","disc_body":"Signals, indicators, and prices shown in this app are for information and education only. They are not financial, investment, or trading advice. Crypto trading is risky and you can lose money. This app is not an exchange, does not hold funds, and does not execute trades. You are responsible for your own decisions.","ref_body":"This app contains referral links to crypto exchanges (for example Binance and WEEX). If you register through them, the app owner may earn a commission from the exchange at no extra cost to you. You are never required to use these links."},"rur":{"search_ph":"🔍 Coin dhoondein (BTC, ETH, SOL...)","h_coin":"Coin / Volume","h_price":"Last Price","h_chg":"24h chg%","disc":"Prices exchange ki public API se aati hain. Ye financial advice nahi hai, trading mein nuqsan ho sakta hai.","sub_chart":"Chart data Binance se (free, live).","hint":"Purani candles dekhne ke liye chart ko kheenchein · do ungliyon se zoom · candle par tap karke waqt aur price dekhein","latest":"Latest ›|","refresh":"Refresh","recent":"Recent Signals:","title":"📈 Live {c}/USDT — Candlestick Signal","ref_btn":"🎁 {x} par account banayein (referral link)","s_vol":"🔥 Volume","s_up":"📈 Gainers","s_dn":"📉 Losers","s_fav":"⭐ Favorites","loading":"Loading…","live":"Live · {time} · {n} coins","no_data":"Data nahi mila","old_data":"Purana data (refresh fail)","err_exch":"⚠️ {x} ka live data nahi mil raha.<br>Shayad exchange ne browser se requests block ki hain, ya internet masla hai.","retry":"Dobara try karein","no_coin":"Koi coin nahi mila","no_fav":"Abhi koi favorite nahi. Coin ke saath ☆ dabayein.","err_chart":"Chart data nahi mila. Ho sakta hai ye coin Binance par na ho, ya internet check karein.","no_signal":"Abhi koi signal nahi","buy_zone":"BUY ZONE","sell_zone":"SELL ZONE","settings":"Settings","set_lang":"Zubaan (Language)","set_chart":"Chart","set_tf":"Default timeframe","set_ind":"Indicators","set_candles":"Candles ki tadaad","set_speed":"Signal ki raftaar","spd_fast":"Tez","spd_norm":"Normal","spd_slow":"Dheema","set_display":"Display","set_colors":"Rang","col_gr":"Hara upar / Laal neeche","col_rg":"Laal upar / Hara neeche","set_auto":"Auto refresh","on":"On","off":"Off","set_sort":"List ki tarteeb","set_about":"Maloomat","privacy":"Privacy Policy","disclaimer":"Dastbardari (Disclaimer)","refnote":"Referral ki wazahat","contact":"Rabta karein","version":"Version","reset":"Settings reset karein","reset_ok":"Sab settings default par wapas karein?","priv_sum_h":"Mukhtasar","ps1":"Koi account ya login nahi, aur koi zaati data jama nahi hota.","ps2":"Sirf aam settings (zubaan, chart ki options, favorites) aap ke phone mein save hoti hain.","ps3":"Prices exchanges ke public data se aati hain; hum kabhi password ya API key nahi maangte.","ps4":"Ye financial advice nahi hai. Referral links se humein commission mil sakta hai.","priv_full_h":"Poori policy (English)","disc_body":"Is app mein dikhaye gaye signals, indicators aur prices sirf maloomat aur taleem ke liye hain. Ye financial, investment ya trading ki salah nahi hain. Crypto trading mein khatra hai aur aap ka paisa doob sakta hai. Ye app exchange nahi hai, aap ka paisa nahi rakhti aur trade nahi karti. Apne faislon ke zimmedaar aap khud hain.","ref_body":"Is app mein crypto exchanges (jaise Binance aur WEEX) ke referral links hain. Agar aap in ke zariye register karte hain to app ke malik ko exchange se commission mil sakta hai, aap ko koi extra kharcha nahi hota. In links ko istemal karna zaroori nahi."},"ur":{"search_ph":"🔍 کوائن تلاش کریں (BTC, ETH, SOL...)","h_coin":"کوائن / والیوم","h_price":"تازہ قیمت","h_chg":"24 گھنٹے %","disc":"قیمتیں ایکسچینجز کے پبلک ڈیٹا سے آتی ہیں۔ یہ مالی مشورہ نہیں ہے، ٹریڈنگ میں نقصان ہو سکتا ہے۔","sub_chart":"چارٹ کا ڈیٹا Binance سے (مفت، لائیو)۔","hint":"پرانی کینڈلز دیکھنے کے لیے چارٹ کو کھینچیں · دو انگلیوں سے زوم کریں · کینڈل پر ٹیپ کر کے وقت اور قیمت دیکھیں","latest":"تازہ ›|","refresh":"ریفریش","recent":"حالیہ سگنلز:","title":"📈 لائیو {c}/USDT — کینڈل اسٹک سگنل","ref_btn":"🎁 {x} پر اکاؤنٹ بنائیں (ریفرل لنک)","s_vol":"🔥 والیوم","s_up":"📈 اضافہ","s_dn":"📉 کمی","s_fav":"⭐ پسندیدہ","loading":"لوڈ ہو رہا ہے…","live":"لائیو · {time} · {n} کوائنز","no_data":"ڈیٹا نہیں ملا","old_data":"پرانا ڈیٹا (ریفریش ناکام)","err_exch":"⚠️ {x} کا لائیو ڈیٹا نہیں مل رہا۔<br>شاید ایکسچینج نے براؤزر کی درخواستیں روک دی ہیں، یا انٹرنیٹ کا مسئلہ ہے۔","retry":"دوبارہ کوشش کریں","no_coin":"کوئی کوائن نہیں ملا","no_fav":"ابھی کوئی پسندیدہ نہیں۔ کوائن کے ساتھ ☆ دبائیں۔","err_chart":"چارٹ کا ڈیٹا نہیں ملا۔ ہو سکتا ہے یہ کوائن Binance پر نہ ہو، یا انٹرنیٹ چیک کریں۔","no_signal":"ابھی کوئی سگنل نہیں","buy_zone":"BUY ZONE","sell_zone":"SELL ZONE","settings":"سیٹنگز","set_lang":"زبان","set_chart":"چارٹ","set_tf":"ڈیفالٹ ٹائم فریم","set_ind":"انڈیکیٹرز","set_candles":"کینڈلز کی تعداد","set_speed":"سگنل کی رفتار","spd_fast":"تیز","spd_norm":"عام","spd_slow":"آہستہ","set_display":"ڈسپلے","set_colors":"رنگ","col_gr":"سبز اوپر / سرخ نیچے","col_rg":"سرخ اوپر / سبز نیچے","set_auto":"آٹو ریفریش","on":"آن","off":"آف","set_sort":"فہرست کی ترتیب","set_about":"معلومات","privacy":"پرائیویسی پالیسی","disclaimer":"دستبرداری","refnote":"ریفرل کی وضاحت","contact":"رابطہ کریں","version":"ورژن","reset":"سیٹنگز ری سیٹ کریں","reset_ok":"تمام سیٹنگز ڈیفالٹ پر واپس کریں؟","priv_sum_h":"مختصراً","ps1":"کوئی اکاؤنٹ یا لاگ اِن نہیں، اور کوئی ذاتی ڈیٹا جمع نہیں کیا جاتا۔","ps2":"صرف عام سیٹنگز (زبان، چارٹ کے اختیارات، پسندیدہ) آپ کے فون میں محفوظ ہوتی ہیں۔","ps3":"قیمتیں ایکسچینجز کے پبلک ڈیٹا سے آتی ہیں؛ ہم کبھی پاس ورڈ یا API کی نہیں مانگتے۔","ps4":"یہ مالی مشورہ نہیں ہے۔ ریفرل لنکس سے ہمیں کمیشن مل سکتا ہے۔","priv_full_h":"مکمل پالیسی (انگریزی)","disc_body":"اس ایپ میں دکھائے گئے سگنلز، انڈیکیٹرز اور قیمتیں صرف معلومات اور تعلیم کے لیے ہیں۔ یہ مالی، سرمایہ کاری یا ٹریڈنگ کا مشورہ نہیں ہیں۔ کرپٹو ٹریڈنگ میں خطرہ ہے اور آپ کی رقم ڈوب سکتی ہے۔ یہ ایپ ایکسچینج نہیں ہے، آپ کی رقم نہیں رکھتی اور ٹریڈ نہیں کرتی۔ اپنے فیصلوں کے ذمہ دار آپ خود ہیں۔","ref_body":"اس ایپ میں کرپٹو ایکسچینجز (جیسے Binance اور WEEX) کے ریفرل لنکس ہیں۔ اگر آپ ان کے ذریعے رجسٹر ہوتے ہیں تو ایپ کے مالک کو ایکسچینج سے کمیشن مل سکتا ہے، آپ پر کوئی اضافی خرچ نہیں آتا۔ ان لنکس کا استعمال ضروری نہیں۔"},"ar":{"search_ph":"🔍 ابحث عن عملة (BTC, ETH, SOL...)","h_coin":"العملة / الحجم","h_price":"آخر سعر","h_chg":"تغير 24 س %","disc":"الأسعار من البيانات العامة للمنصات. هذا ليس نصيحة مالية، والتداول قد يسبب خسائر.","sub_chart":"بيانات الرسم من Binance (مجانية ومباشرة).","hint":"اسحب الرسم لرؤية الشموع الأقدم · اضغط بإصبعين للتكبير · المس شمعة لرؤية الوقت والسعر","latest":"الأحدث ›|","refresh":"تحديث","recent":"آخر الإشارات:","title":"📈 مباشر {c}/USDT — إشارة الشموع","ref_btn":"🎁 افتح حساباً في {x} (رابط الإحالة)","s_vol":"🔥 الحجم","s_up":"📈 الرابحون","s_dn":"📉 الخاسرون","s_fav":"⭐ المفضلة","loading":"جارٍ التحميل…","live":"مباشر · {time} · {n} عملة","no_data":"لا توجد بيانات","old_data":"بيانات قديمة (فشل التحديث)","err_exch":"⚠️ بيانات {x} المباشرة غير متاحة.<br>ربما تحجب المنصة طلبات المتصفح، أو توجد مشكلة في الإنترنت.","retry":"أعد المحاولة","no_coin":"لم يتم العثور على عملة","no_fav":"لا توجد مفضلة بعد. اضغط ☆ بجانب العملة لإضافتها.","err_chart":"لم يتم العثور على بيانات الرسم. قد لا تكون هذه العملة على Binance، أو تحقق من الإنترنت.","no_signal":"لا توجد إشارة بعد","buy_zone":"BUY ZONE","sell_zone":"SELL ZONE","settings":"الإعدادات","set_lang":"اللغة","set_chart":"الرسم البياني","set_tf":"الإطار الزمني الافتراضي","set_ind":"المؤشرات","set_candles":"عدد الشموع","set_speed":"سرعة الإشارة","spd_fast":"سريعة","spd_norm":"عادية","spd_slow":"بطيئة","set_display":"العرض","set_colors":"الألوان","col_gr":"أخضر صعود / أحمر هبوط","col_rg":"أحمر صعود / أخضر هبوط","set_auto":"التحديث التلقائي","on":"تشغيل","off":"إيقاف","set_sort":"ترتيب القائمة","set_about":"حول","privacy":"سياسة الخصوصية","disclaimer":"إخلاء المسؤولية","refnote":"إفصاح الإحالة","contact":"اتصل بنا","version":"الإصدار","reset":"إعادة ضبط الإعدادات","reset_ok":"إعادة كل الإعدادات إلى الافتراضي؟","priv_sum_h":"باختصار","ps1":"لا حساب ولا تسجيل دخول، ولا يتم جمع أي بيانات شخصية.","ps2":"تُحفظ على هاتفك إعدادات بسيطة فقط (اللغة وخيارات الرسم والمفضلة).","ps3":"الأسعار من البيانات العامة للمنصات؛ لا نطلب كلمات مرور أو مفاتيح API أبداً.","ps4":"هذا ليس نصيحة مالية. قد نحصل على عمولة من روابط الإحالة.","priv_full_h":"السياسة الكاملة (بالإنجليزية)","disc_body":"الإشارات والمؤشرات والأسعار المعروضة في هذا التطبيق للمعلومات والتعليم فقط، وليست نصيحة مالية أو استثمارية أو تداول. تداول العملات الرقمية محفوف بالمخاطر وقد تخسر أموالك. هذا التطبيق ليس منصة تداول ولا يحتفظ بالأموال ولا ينفذ صفقات. أنت المسؤول عن قراراتك.","ref_body":"يحتوي هذا التطبيق على روابط إحالة لمنصات عملات رقمية (مثل Binance وWEEX). إذا سجلت عبرها فقد يحصل مالك التطبيق على عمولة من المنصة دون أي تكلفة إضافية عليك. استخدام هذه الروابط غير إلزامي."},"hi":{"search_ph":"🔍 कॉइन खोजें (BTC, ETH, SOL...)","h_coin":"कॉइन / वॉल्यूम","h_price":"ताज़ा कीमत","h_chg":"24 घंटे %","disc":"कीमतें एक्सचेंज के पब्लिक डेटा से आती हैं। यह वित्तीय सलाह नहीं है, ट्रेडिंग में नुकसान हो सकता है।","sub_chart":"चार्ट डेटा Binance से (मुफ़्त, लाइव)।","hint":"पुरानी कैंडल देखने के लिए चार्ट खींचें · दो उंगलियों से ज़ूम करें · कैंडल पर टैप करके समय और कीमत देखें","latest":"ताज़ा ›|","refresh":"रिफ्रेश","recent":"हाल के सिग्नल:","title":"📈 लाइव {c}/USDT — कैंडलस्टिक सिग्नल","ref_btn":"🎁 {x} पर अकाउंट बनाएँ (रेफरल लिंक)","s_vol":"🔥 वॉल्यूम","s_up":"📈 बढ़त","s_dn":"📉 गिरावट","s_fav":"⭐ पसंदीदा","loading":"लोड हो रहा है…","live":"लाइव · {time} · {n} कॉइन","no_data":"डेटा नहीं मिला","old_data":"पुराना डेटा (रिफ्रेश विफल)","err_exch":"⚠️ {x} का लाइव डेटा नहीं मिल रहा।<br>शायद एक्सचेंज ने ब्राउज़र के अनुरोध रोक दिए हैं, या इंटरनेट की समस्या है।","retry":"फिर कोशिश करें","no_coin":"कोई कॉइन नहीं मिला","no_fav":"अभी कोई पसंदीदा नहीं। जोड़ने के लिए कॉइन के साथ ☆ दबाएँ।","err_chart":"चार्ट डेटा नहीं मिला। हो सकता है यह कॉइन Binance पर न हो, या इंटरनेट जाँचें।","no_signal":"अभी कोई सिग्नल नहीं","buy_zone":"BUY ZONE","sell_zone":"SELL ZONE","settings":"सेटिंग्स","set_lang":"भाषा","set_chart":"चार्ट","set_tf":"डिफ़ॉल्ट टाइमफ्रेम","set_ind":"इंडिकेटर","set_candles":"कैंडल की संख्या","set_speed":"सिग्नल की गति","spd_fast":"तेज़","spd_norm":"सामान्य","spd_slow":"धीमी","set_display":"डिस्प्ले","set_colors":"रंग","col_gr":"हरा ऊपर / लाल नीचे","col_rg":"लाल ऊपर / हरा नीचे","set_auto":"ऑटो रिफ्रेश","on":"चालू","off":"बंद","set_sort":"सूची का क्रम","set_about":"जानकारी","privacy":"प्राइवेसी पॉलिसी","disclaimer":"अस्वीकरण","refnote":"रेफरल की जानकारी","contact":"संपर्क करें","version":"वर्ज़न","reset":"सेटिंग्स रीसेट करें","reset_ok":"सभी सेटिंग्स डिफ़ॉल्ट पर लौटाएँ?","priv_sum_h":"संक्षेप में","ps1":"कोई अकाउंट या लॉगिन नहीं, और कोई निजी डेटा इकट्ठा नहीं किया जाता।","ps2":"सिर्फ़ सामान्य सेटिंग्स (भाषा, चार्ट विकल्प, पसंदीदा) आपके फ़ोन में सेव होती हैं।","ps3":"कीमतें एक्सचेंज के पब्लिक डेटा से आती हैं; हम कभी पासवर्ड या API की नहीं माँगते।","ps4":"यह वित्तीय सलाह नहीं है। रेफरल लिंक से हमें कमीशन मिल सकता है।","priv_full_h":"पूरी पॉलिसी (अंग्रेज़ी में)","disc_body":"इस ऐप में दिखाए गए सिग्नल, इंडिकेटर और कीमतें केवल जानकारी और शिक्षा के लिए हैं। ये वित्तीय, निवेश या ट्रेडिंग सलाह नहीं हैं। क्रिप्टो ट्रेडिंग जोखिम भरी है और आपका पैसा डूब सकता है। यह ऐप एक्सचेंज नहीं है, आपका पैसा नहीं रखता और ट्रेड नहीं करता। अपने फ़ैसलों की ज़िम्मेदारी आपकी है।","ref_body":"इस ऐप में क्रिप्टो एक्सचेंज (जैसे Binance और WEEX) के रेफरल लिंक हैं। अगर आप इनसे रजिस्टर करते हैं तो ऐप के मालिक को एक्सचेंज से कमीशन मिल सकता है, आपको कोई अतिरिक्त खर्च नहीं होता। इन लिंक का उपयोग ज़रूरी नहीं है।"},"tr":{"search_ph":"🔍 Coin ara (BTC, ETH, SOL...)","h_coin":"Coin / Hacim","h_price":"Son Fiyat","h_chg":"24s değişim %","disc":"Fiyatlar borsaların herkese açık verilerinden gelir. Bu finansal tavsiye değildir; alım satım zarara yol açabilir.","sub_chart":"Grafik verisi Binance'ten (ücretsiz, canlı).","hint":"Eski mumları görmek için grafiği sürükleyin · yakınlaştırmak için iki parmakla sıkıştırın · zaman ve fiyat için muma dokunun","latest":"Son ›|","refresh":"Yenile","recent":"Son Sinyaller:","title":"📈 Canlı {c}/USDT — Mum Sinyali","ref_btn":"🎁 {x} hesabı aç (referans bağlantısı)","s_vol":"🔥 Hacim","s_up":"📈 Yükselenler","s_dn":"📉 Düşenler","s_fav":"⭐ Favoriler","loading":"Yükleniyor…","live":"Canlı · {time} · {n} coin","no_data":"Veri yok","old_data":"Eski veri (yenileme başarısız)","err_exch":"⚠️ {x} canlı verisi alınamıyor.<br>Borsa tarayıcı isteklerini engelliyor olabilir ya da internet sorunu var.","retry":"Tekrar dene","no_coin":"Coin bulunamadı","no_fav":"Henüz favori yok. Eklemek için coinin yanındaki ☆ simgesine dokunun.","err_chart":"Grafik verisi bulunamadı. Bu coin Binance'te olmayabilir ya da internetinizi kontrol edin.","no_signal":"Henüz sinyal yok","buy_zone":"BUY ZONE","sell_zone":"SELL ZONE","settings":"Ayarlar","set_lang":"Dil","set_chart":"Grafik","set_tf":"Varsayılan zaman aralığı","set_ind":"Göstergeler","set_candles":"Gösterilen mum sayısı","set_speed":"Sinyal hızı","spd_fast":"Hızlı","spd_norm":"Normal","spd_slow":"Yavaş","set_display":"Görünüm","set_colors":"Renkler","col_gr":"Yeşil yükselir / Kırmızı düşer","col_rg":"Kırmızı yükselir / Yeşil düşer","set_auto":"Otomatik yenileme","on":"Açık","off":"Kapalı","set_sort":"Liste sırası","set_about":"Hakkında","privacy":"Gizlilik Politikası","disclaimer":"Sorumluluk Reddi","refnote":"Referans bildirimi","contact":"Bize ulaşın","version":"Sürüm","reset":"Ayarları sıfırla","reset_ok":"Tüm ayarlar varsayılana döndürülsün mü?","priv_sum_h":"Kısaca","ps1":"Hesap ve giriş yok, kişisel veri toplanmaz.","ps2":"Telefonunuzda yalnızca basit ayarlar (dil, grafik seçenekleri, favoriler) saklanır.","ps3":"Fiyatlar borsaların herkese açık verilerinden gelir; asla parola veya API anahtarı istemeyiz.","ps4":"Finansal tavsiye değildir. Referans bağlantılarından komisyon kazanabiliriz.","priv_full_h":"Tam politika (İngilizce)","disc_body":"Bu uygulamada gösterilen sinyaller, göstergeler ve fiyatlar yalnızca bilgi ve eğitim amaçlıdır; finansal, yatırım veya alım satım tavsiyesi değildir. Kripto alım satımı risklidir ve paranızı kaybedebilirsiniz. Uygulama bir borsa değildir, para tutmaz ve işlem yapmaz. Kararlarınızın sorumluluğu size aittir.","ref_body":"Bu uygulama kripto borsalarına (ör. Binance ve WEEX) referans bağlantıları içerir. Bunlar üzerinden kayıt olursanız uygulama sahibi borsadan komisyon kazanabilir; size ek maliyeti yoktur. Bu bağlantıları kullanmak zorunlu değildir."},"id":{"search_ph":"🔍 Cari koin (BTC, ETH, SOL...)","h_coin":"Koin / Volume","h_price":"Harga Terakhir","h_chg":"Perubahan 24j %","disc":"Harga berasal dari data publik bursa. Ini bukan saran keuangan; trading bisa menyebabkan kerugian.","sub_chart":"Data grafik dari Binance (gratis, langsung).","hint":"Geser grafik untuk melihat candle lama · cubit dengan dua jari untuk zoom · ketuk candle untuk waktu dan harga","latest":"Terbaru ›|","refresh":"Segarkan","recent":"Sinyal Terbaru:","title":"📈 Langsung {c}/USDT — Sinyal Candlestick","ref_btn":"🎁 Buka akun {x} (tautan referral)","s_vol":"🔥 Volume","s_up":"📈 Naik","s_dn":"📉 Turun","s_fav":"⭐ Favorit","loading":"Memuat…","live":"Langsung · {time} · {n} koin","no_data":"Data tidak ada","old_data":"Data lama (gagal menyegarkan)","err_exch":"⚠️ Data langsung {x} tidak tersedia.<br>Bursa mungkin memblokir permintaan browser, atau ada masalah internet.","retry":"Coba lagi","no_coin":"Koin tidak ditemukan","no_fav":"Belum ada favorit. Ketuk ☆ di samping koin untuk menambahkan.","err_chart":"Data grafik tidak ditemukan. Koin ini mungkin tidak ada di Binance, atau periksa internet Anda.","no_signal":"Belum ada sinyal","buy_zone":"BUY ZONE","sell_zone":"SELL ZONE","settings":"Pengaturan","set_lang":"Bahasa","set_chart":"Grafik","set_tf":"Kerangka waktu default","set_ind":"Indikator","set_candles":"Jumlah candle","set_speed":"Kecepatan sinyal","spd_fast":"Cepat","spd_norm":"Normal","spd_slow":"Lambat","set_display":"Tampilan","set_colors":"Warna","col_gr":"Hijau naik / Merah turun","col_rg":"Merah naik / Hijau turun","set_auto":"Segarkan otomatis","on":"Nyala","off":"Mati","set_sort":"Urutan daftar","set_about":"Tentang","privacy":"Kebijakan Privasi","disclaimer":"Sanggahan","refnote":"Pengungkapan referral","contact":"Hubungi kami","version":"Versi","reset":"Reset pengaturan","reset_ok":"Kembalikan semua pengaturan ke default?","priv_sum_h":"Singkatnya","ps1":"Tanpa akun atau login, dan tidak ada data pribadi yang dikumpulkan.","ps2":"Hanya pengaturan sederhana (bahasa, opsi grafik, favorit) yang disimpan di ponsel Anda.","ps3":"Harga berasal dari data publik bursa; kami tidak pernah meminta kata sandi atau kunci API.","ps4":"Bukan saran keuangan. Tautan referral dapat memberi kami komisi.","priv_full_h":"Kebijakan lengkap (Bahasa Inggris)","disc_body":"Sinyal, indikator, dan harga yang ditampilkan di aplikasi ini hanya untuk informasi dan edukasi. Bukan saran keuangan, investasi, atau trading. Trading kripto berisiko dan Anda bisa kehilangan uang. Aplikasi ini bukan bursa, tidak menyimpan dana, dan tidak menjalankan transaksi. Keputusan sepenuhnya tanggung jawab Anda.","ref_body":"Aplikasi ini berisi tautan referral ke bursa kripto (misalnya Binance dan WEEX). Jika Anda mendaftar melalui tautan tersebut, pemilik aplikasi dapat memperoleh komisi dari bursa tanpa biaya tambahan bagi Anda. Penggunaan tautan ini tidak wajib."}};
+const S={lang:'',vis:60,spd:1,inv:0,auto:1};
+try{Object.assign(S,JSON.parse(localStorage.getItem('S')||'{}'))}catch(e){}
+if(!LANGS.some(l=>l[0]===S.lang)){const dl=((navigator.language||'en')+'').slice(0,2).toLowerCase();S.lang=LANGS.some(l=>l[0]===dl)?dl:'en'}
+if(![30,60,100,150].includes(S.vis))S.vis=60;
+const saveS=()=>{try{localStorage.setItem('S',JSON.stringify(S))}catch(e){}};
+function t(k,v){let s=(I18N[S.lang]&&I18N[S.lang][k])||I18N.en[k]||k;if(v)for(const q in v)s=s.split('{'+q+'}').join(v[q]);return s}
+let ex='binance',coin='BTC',tf='5m',view='list',lastD=null,sort='vol',docKey='priv';
 let IND={ema:1,vol:1,macd:1,rsi:1,scale:1};
+let vis=S.vis,shift=0,cT=null,lastKey='',olderBusy=false;const NOMORE={};
 try{ex=localStorage.getItem('ex')||ex;coin=localStorage.getItem('coin')||coin;tf=localStorage.getItem('tf')||tf;Object.assign(IND,JSON.parse(localStorage.getItem('ind')||'{}'))}catch(e){}
 if(!EXS.some(x=>x.id===ex))ex='binance';
+let FAV=[];try{FAV=JSON.parse(localStorage.getItem('fav')||'[]')}catch(e){}
+try{const sv=localStorage.getItem('sort');if(['vol','up','dn','fav'].includes(sv))sort=sv}catch(e){}
 const $=id=>document.getElementById(id);
 const fmt=p=>'$'+p.toFixed(p>=100?2:p>=1?4:6);
 const save=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
@@ -233,12 +292,12 @@ const FETCH={
 };
 /* PROXY: agar kisi exchange ka data seedha na aaye (browser block), to Cloudflare Worker ka link yahan daalein.
    Worker sirf PUBLIC prices laata hai, API keys is mein kabhi nahi jati. Khali ho to proxy use nahi hota. */
-const PROXY='';
+const PROXY='https://crypto-proxy.understanding975.workers.dev';
 async function J(u){
   try{const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}
   catch(e){
     if(!PROXY)throw e;
-    const r=await fetch(PROXY+'?u='+encodeURIComponent(u));
+    const r=await fetch(PROXY+'/?url='+encodeURIComponent(u));
     if(!r.ok)throw new Error('Proxy HTTP '+r.status);
     return r.json();
   }
@@ -259,55 +318,120 @@ function buildHead(){
   const x=EXO(ex);
   $('xb').style.background=x.color;$('xb').innerHTML=badge(x);
   $('xn').textContent=x.name;
-  $('ref').href=x.ref;$('ref').textContent='🎁 '+x.name+' par account banayein (referral link)';
-  $('srt').innerHTML=[['vol','🔥 Volume'],['up','📈 Gainers'],['dn','📉 Losers']].map(([k,n])=>`<button class="sb ${k===sort?'on':''}" data-sort="${k}">${n}</button>`).join('');
+  $('ref').href=x.ref;$('ref').textContent=t('ref_btn',{x:x.name});
+  $('srt').innerHTML=[['vol','s_vol'],['up','s_up'],['dn','s_dn'],['fav','s_fav']].map(([k,n])=>`<button class="sb ${k===sort?'on':''}" data-sort="${k}">${t(n)}</button>`).join('');
 }
 function setStatus(kind,text){$('dot').className='dot '+kind;$('xs').textContent=text}
 function renderRows(){
   const d=DATA[ex];
-  if(!d){$('rows').innerHTML='<div class="empty">Loading…</div>';return}
-  if(d.err){$('rows').innerHTML=`<div class="empty">⚠️ ${EXO(ex).name} ka live data nahi mil raha.<br>Shayad exchange ne browser se requests block ki hain, ya internet masla hai.${d.msg?'<br><small>('+String(d.msg).replace(/[<>&]/g,'')+')</small>':''}<br><button data-retry="1">Dobara try karein</button></div>`;return}
+  if(!d){$('rows').innerHTML='<div class="empty">'+t('loading')+'</div>';return}
+  if(d.err){$('rows').innerHTML=`<div class="empty">${t('err_exch',{x:EXO(ex).name})}${d.msg?'<br><small>('+String(d.msg).replace(/[<>&]/g,'')+')</small>':''}<br><button data-retry="1">${t('retry')}</button></div>`;return}
   const q=$('q').value.trim().toUpperCase();
   let rows=d.rows.slice();
   if(q)rows=rows.filter(r=>r.b.includes(q));
+  if(sort==='fav')rows=rows.filter(r=>FAV.includes(r.b));
   rows.sort(sort==='up'?(a,b)=>b.c-a.c:sort==='dn'?(a,b)=>a.c-b.c:(a,b)=>b.v-a.v);
   rows=rows.slice(0,q?100:60);
-  if(!rows.length){$('rows').innerHTML='<div class="empty">Koi coin nahi mila</div>';return}
-  $('rows').innerHTML=rows.map(r=>`<div class="cr" data-open="${r.b}"><div class="cc"><img src="${logoURL(r.b)}" data-l="${r.b}" loading="lazy" alt=""><div class="cs"><b>${r.b}</b><small>/USDT</small><div>Vol ${vol(r.v)}</div></div></div><div class="cp">${money(r.p)}</div><div class="cg"><span class="${r.c>=0?'u':'d'}">${r.c>=0?'+':''}${r.c.toFixed(2)}%</span></div></div>`).join('');
+  if(!rows.length){$('rows').innerHTML='<div class="empty">'+t(sort==='fav'&&!q?'no_fav':'no_coin')+'</div>';return}
+  $('rows').innerHTML=rows.map(r=>`<div class="cr" data-open="${r.b}"><div class="cc"><span class="st ${FAV.includes(r.b)?'on':''}" data-fav="${r.b}">${FAV.includes(r.b)?'★':'☆'}</span><img src="${logoURL(r.b)}" data-l="${r.b}" loading="lazy" alt=""><div class="cs"><b>${r.b}</b><small>/USDT</small><div>Vol ${vol(r.v)}</div></div></div><div class="cp">${money(r.p)}</div><div class="cg"><span class="${r.c>=0?'u':'d'}">${r.c>=0?'+':''}${r.c.toFixed(2)}%</span></div></div>`).join('');
 }
 async function loadList(){
   const id=ex,my=++reqId,b=$('rfl');
   b.classList.add('spin');
-  if(!DATA[id])setStatus('','Loading…');
+  if(!DATA[id])setStatus('',t('loading'));
   try{
     const rows=clean(await FETCH[id]());
     if(!rows.length)throw new Error('empty');
     DATA[id]={rows,t:new Date()};
-    if(my===reqId&&id===ex){setStatus('ok','Live · '+DATA[id].t.toLocaleTimeString('en-GB')+' · '+rows.length+' coins')}
+    if(my===reqId&&id===ex){refreshStatus()}
   }catch(e){
     if(!DATA[id]||DATA[id].err||!DATA[id].rows)DATA[id]={err:1,msg:String((e&&e.message)||e)};
-    if(my===reqId&&id===ex)setStatus(DATA[id].err?'bad':'ok',DATA[id].err?'Data nahi mila':'Purana data (refresh fail)');
+    if(my===reqId&&id===ex)setStatus(DATA[id].err?'bad':'ok',DATA[id].err?t('no_data'):t('old_data'));
   }
   if(my===reqId&&id===ex)renderRows();
   setTimeout(()=>b.classList.remove('spin'),400);
 }
 
 /* ---------- Screens ---------- */
-function showList(push){
-  view='list';$('chartView').style.display='none';$('listView').style.display='block';
-  buildNav();buildHead();renderRows();
-  if(DATA[ex]&&DATA[ex].t)setStatus('ok','Live · '+DATA[ex].t.toLocaleTimeString('en-GB')+' · '+DATA[ex].rows.length+' coins');
+const VIEWS=['listView','chartView','setView','docView'];
+function hideAll(){VIEWS.forEach(i=>$(i).style.display='none')}
+function refreshStatus(){if(DATA[ex]&&DATA[ex].t&&!DATA[ex].err)setStatus('ok',t('live',{time:DATA[ex].t.toLocaleTimeString('en-GB'),n:DATA[ex].rows.length}))}
+function showList(){
+  view='list';hideAll();$('listView').style.display='block';
+  buildNav();buildHead();renderRows();refreshStatus();
   loadList();
 }
 function showChart(){
-  view='chart';$('listView').style.display='none';$('chartView').style.display='block';
+  view='chart';hideAll();$('chartView').style.display='block';
   $('back').textContent='← '+EXO(ex).name;
-  window.scrollTo(0,0);buildChips();load();
+  window.scrollTo(0,0);shift=0;cT=null;lastD=null;buildChips();load();
 }
 function buildChips(){
-  $('tfs').innerHTML=TFS.map(t=>`<button class="chip ${t===tf?'on':''}" data-t="${t}">${t==='1d'?'1D':t}</button>`).join('');
+  $('tfs').innerHTML=TFS.map(x=>`<button class="chip ${x===tf?'on':''}" data-t="${x}">${x==='1d'?'1D':x}</button>`).join('');
   $('inds').innerHTML=[['ema','EMA'],['vol','VOL'],['macd','MACD'],['rsi','RSI'],['scale','Price']].map(([k,n])=>`<button class="ind ${IND[k]?'on':''}" data-ind="${k}">${n}</button>`).join('');
-  $('title').textContent=`📈 Live ${coin}/USDT — Candlestick Signal`;
+  $('title').textContent=t('title',{c:coin});
+}
+
+/* ---------- Settings & info pages ---------- */
+const PRIV_EN=`<p><b>Last updated:</b> 12 October 2026 · App: BTC Buy Sell Signals</p>
+<h3>1. Information we collect</h3><p>We do not collect, store, or sell your name, email, phone number, location, contacts, photos, device identifiers, or payment information. There is no sign-up or login.</p>
+<h3>2. Data stored on your device</h3><p>The app saves simple preferences (selected exchange, chart timeframe, indicators, language, favorites) in your device's local storage. This data never leaves your device. Clear the app's storage or uninstall to remove it.</p>
+<h3>3. Market data and third parties</h3><p>The app requests public market data from crypto exchanges (Binance, Bybit, MEXC, WEEX, OKX, Bitget, KuCoin, Gate). Some requests pass through a relay on Cloudflare Workers that only forwards public price requests. These providers, and GitHub Pages (which hosts the app), may technically receive your IP address and basic request details under their own privacy policies. We do not receive or use that information.</p>
+<h3>4. Referral links</h3><p>The app may contain referral links to crypto exchanges. If you register or trade through them, we may receive a commission at no extra cost to you. The exchange's own terms and privacy policy then apply.</p>
+<h3>5. Not financial advice</h3><p>Signals, indicators, and prices are for information and education only. Crypto trading is risky and you can lose money. The app is not an exchange, holds no funds, and executes no trades.</p>
+<h3>6. Children</h3><p>The app is intended for users aged 18 and over.</p>
+<h3>7. Security</h3><p>The app never handles passwords or API keys. Never share them with anyone claiming to represent the app.</p>
+<h3>8. Changes</h3><p>We may update this policy; the date above will change accordingly.</p>
+<h3>9. Contact</h3><p>${MAIL}</p>`;
+function buildSettings(){
+  const ch=(a,v,l,on)=>`<button class="sb ${on?'on':''}" data-${a}="${v}">${l}</button>`;
+  const sec=k=>`<div class="sh">${t(k)}</div>`;
+  let h=sec('set_lang')+'<div class="panel opts">'+LANGS.map(l=>ch('lang',l[0],l[1],S.lang===l[0])).join('')+'</div>';
+  h+=sec('set_chart')+'<div class="panel">'
+   +`<div class="ol">${t('set_tf')}</div><div class="opts">`+TFS.map(x=>ch('stf',x,x==='1d'?'1D':x,tf===x)).join('')+'</div>'
+   +`<div class="ol">${t('set_ind')}</div><div class="opts">`+[['ema','EMA'],['vol','VOL'],['macd','MACD'],['rsi','RSI'],['scale','Price']].map(([k,n])=>ch('sind',k,n,IND[k])).join('')+'</div>'
+   +`<div class="ol">${t('set_candles')}</div><div class="opts">`+[30,60,100,150].map(n=>ch('svis',n,n,S.vis===n)).join('')+'</div>'
+   +`<div class="ol">${t('set_speed')}</div><div class="opts">`+[['spd_fast',0],['spd_norm',1],['spd_slow',2]].map(([k,i])=>ch('sspd',i,t(k)+' ('+SPD[i][0]+'/'+SPD[i][1]+')',S.spd===i)).join('')+'</div></div>';
+  h+=sec('set_display')+'<div class="panel">'
+   +`<div class="ol">${t('set_colors')}</div><div class="opts">`+ch('scol',0,t('col_gr'),!S.inv)+ch('scol',1,t('col_rg'),!!S.inv)+'</div>'
+   +`<div class="ol">${t('set_auto')}</div><div class="opts">`+ch('sauto',1,t('on'),!!S.auto)+ch('sauto',0,t('off'),!S.auto)+'</div>'
+   +`<div class="ol">${t('set_sort')}</div><div class="opts">`+[['vol','s_vol'],['up','s_up'],['dn','s_dn'],['fav','s_fav']].map(([k,l])=>ch('ssort',k,t(l),sort===k)).join('')+'</div></div>';
+  h+=sec('set_about')+'<div class="panel lrs">'
+   +`<button class="lr" data-act="priv"><span>${t('privacy')}</span><span class="ar">›</span></button>`
+   +`<button class="lr" data-act="disc"><span>${t('disclaimer')}</span><span class="ar">›</span></button>`
+   +`<button class="lr" data-act="ref"><span>${t('refnote')}</span><span class="ar">›</span></button>`
+   +`<a class="lr" href="mailto:${MAIL}"><span>${t('contact')}</span><span>${MAIL}</span></a>`
+   +`<div class="lr"><span>${t('version')}</span><span>${VER}</span></div>`
+   +`<button class="lr" data-act="reset"><span>${t('reset')}</span><span>↺</span></button></div>`;
+  $('setBody').innerHTML=h;
+}
+function buildDoc(){
+  const k=docKey;
+  $('docTitle').textContent=t(k==='priv'?'privacy':k==='disc'?'disclaimer':'refnote');
+  $('docBody').className='panel doc';
+  $('docBody').innerHTML=k==='priv'
+    ?`<h3>${t('priv_sum_h')}</h3><ul>`+[1,2,3,4].map(i=>`<li>${t('ps'+i)}</li>`).join('')+`</ul><h3>${t('priv_full_h')}</h3><div dir="ltr">${PRIV_EN}</div>`
+    :`<p>${t(k==='disc'?'disc_body':'ref_body')}</p>`;
+}
+function showSet(push){
+  view='set';hideAll();$('setView').style.display='block';buildSettings();window.scrollTo(0,0);
+  if(push)history.pushState({v:'set'},'');
+}
+function showDoc(k,push){
+  docKey=k;view='doc';hideAll();$('docView').style.display='block';buildDoc();window.scrollTo(0,0);
+  if(push)history.pushState({v:'doc'},'');
+}
+function applyColors(){document.body.classList.toggle('inv',!!S.inv)}
+function applyLang(){
+  const L=S.lang;
+  document.documentElement.lang=L==='rur'?'ur-Latn':L;
+  document.body.classList.toggle('rtl',RTL.has(L));
+  document.querySelectorAll('[data-i]').forEach(e=>{e.textContent=t(e.dataset.i)});
+  document.querySelectorAll('[data-ph]').forEach(e=>{e.placeholder=t(e.dataset.ph)});
+  if(view==='list'){buildHead();renderRows();refreshStatus()}
+  else if(view==='chart'){buildChips();if(lastD)render(lastD)}
+  else if(view==='set')buildSettings();
+  else if(view==='doc')buildDoc();
 }
 
 /* ---------- Chart code (wahi jo pehle tha) ---------- */
@@ -322,34 +446,60 @@ function rsiCalc(c,n){const o=[];let ag=0,al=0;
 
 async function _load(){
   $('err').textContent='';
+  const key=coin+'|'+tf;
   try{
-    const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${coin}USDT&interval=${tf}&limit=200`);
+    const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${coin}USDT&interval=${tf}&limit=500`);
     if(!r.ok)throw new Error('Binance error '+r.status);
-    const d=(await r.json()).map(k=>({o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}));
+    let d=(await r.json()).map(k=>({t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}));
+    if(key!==coin+'|'+tf)return;
+    if(lastD&&lastKey===key){
+      const lt=lastD[lastD.length-1].t;
+      if(shift>0&&d[d.length-1].t>lt){let j=d.length-1;while(j>0&&d[j].t>lt)j--;shift+=d.length-1-j}
+      d=lastD.filter(z=>z.t<d[0].t).concat(d);
+    }
+    lastKey=key;
     render(d);
-  }catch(e){$('err').textContent='Chart data nahi mila. Ho sakta hai ye coin Binance par na ho, ya internet check karein.'}
+  }catch(e){$('err').textContent=t('err_chart')}
+}
+async function older(){
+  const key=coin+'|'+tf;
+  if(olderBusy||!lastD||NOMORE[key]||lastD.length>=4000)return;
+  olderBusy=true;
+  try{
+    const r=await fetch(`https://api.binance.com/api/v3/klines?symbol=${coin}USDT&interval=${tf}&limit=500&endTime=${lastD[0].t-1}`);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const rows=(await r.json()).map(k=>({t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],v:+k[5]}));
+    if(key!==coin+'|'+tf)return;
+    if(!rows.length){NOMORE[key]=1}
+    else{render(rows.filter(z=>z.t<lastD[0].t).concat(lastD))}
+  }catch(e){}
+  finally{olderBusy=false}
 }
 
 function render(d){
   lastD=d;
-  const cl=d.map(z=>z.c),e9=ema(cl,9),e21=ema(cl,21),sg=[];
-  for(let i=22;i<d.length;i++){
+  const [fa,sa]=SPD[S.spd]||SPD[1],UC=S.inv?'#ff5c5c':'#00c896',DC=S.inv?'#00c896':'#ff5c5c',UA=a=>S.inv?`rgba(255,92,92,${a})`:`rgba(0,200,150,${a})`,DA=a=>S.inv?`rgba(0,200,150,${a})`:`rgba(255,92,92,${a})`;
+  const cl=d.map(z=>z.c),e9=ema(cl,fa),e21=ema(cl,sa),sg=[];
+  for(let i=sa+1;i<d.length;i++){
     const a=e9[i-1]-e21[i-1],b=e9[i]-e21[i];
     if(a<=0&&b>0)sg.push({i,t:'BUY',p:cl[i]});
     else if(a>=0&&b<0)sg.push({i,t:'SELL',p:cl[i]});
   }
   const last=cl[cl.length-1],buy=e9[e9.length-1]>e21[e21.length-1];
   $('price').textContent=fmt(last);
-  $('zone').textContent=buy?'BUY ZONE':'SELL ZONE';
+  $('zone').textContent=buy?t('buy_zone'):t('sell_zone');
   $('zone').className='badge '+(buy?'buy':'sell');
-  $('sigs').innerHTML=sg.slice(-6).reverse().map(s=>`<div class="sig"><span style="color:${s.t==='BUY'?'var(--buy)':'var(--sell)'}">${s.t}</span><span>${fmt(s.p)}</span></div>`).join('')||'<div class="sig"><span>Abhi koi signal nahi</span></div>';
+  $('sigs').innerHTML=sg.slice(-6).reverse().map(s=>`<div class="sig"><span style="color:${s.t==='BUY'?'var(--buy)':'var(--sell)'}">${s.t}</span><span>${fmt(s.p)}</span></div>`).join('')||'<div class="sig"><span>'+t('no_signal')+'</span></div>';
 
   const e12=ema(cl,12),e26=ema(cl,26),dif=e12.map((q,i)=>q-e26[i]),dea=ema(dif,9),his=dif.map((q,i)=>q-dea[i]),rs=rsiCalc(cl,6);
-  const N=60,off=Math.max(0,d.length-N),v=d.slice(off),n=v.length;
-  const panes=[IND.vol&&'vol',IND.macd&&'macd',IND.rsi&&'rsi'].filter(Boolean),MH=150,PH=58,H=MH+panes.length*PH;
+  vis=Math.max(15,Math.min(vis,d.length,250));shift=Math.max(0,Math.min(shift,d.length-vis));
+  const end=d.length-shift,off=end-vis,v=d.slice(off,end),n=v.length,TH=16,ci=cT==null?-1:d.findIndex(z=>z.t===cT),ri=(ci>=off&&ci<end)?ci:end-1;
+  $('now').style.display=shift>0?'block':'none';
+  if(off<20)older();
+  const panes=[IND.vol&&'vol',IND.macd&&'macd',IND.rsi&&'rsi'].filter(Boolean),MH=150,PH=58,H=MH+panes.length*PH+TH;
   const cv=$('c');cv.style.height=H+'px';
   const dpr=Math.min(Math.max(window.devicePixelRatio||1,3),4),W=cv.clientWidth;
-  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const nw=Math.round(W*dpr),nh=Math.round(H*dpr);if(cv.width!==nw||cv.height!==nh){cv.width=nw;cv.height=nh}
   const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
   const PX=9,RM=IND.scale?50:9,PY=14,F='-apple-system,Roboto,sans-serif',MUT='#8b93a7';
   const hi=Math.max(...v.map(z=>z.h)),lo=Math.min(...v.map(z=>z.l));
@@ -362,23 +512,23 @@ function render(d){
       x.fillStyle=MUT;x.fillText(dec(q),W-RM+4,yy)}
   }
   v.forEach((z,i)=>{
-    x.strokeStyle=x.fillStyle=z.c>=z.o?'#00c896':'#ff5c5c';
+    x.strokeStyle=x.fillStyle=z.c>=z.o?UC:DC;
     x.lineWidth=1;x.beginPath();x.moveTo(X(i),Y(z.h));x.lineTo(X(i),Y(z.l));x.stroke();
     x.fillRect(X(i)-cw/2,Y(Math.max(z.o,z.c)),cw,Math.max(1,Math.abs(Y(z.o)-Y(z.c))));
   });
-  const line=(ar,col,fy,w)=>{x.strokeStyle=col;x.lineWidth=w||1.1;x.lineJoin='round';x.beginPath();ar.slice(off).forEach((q,i)=>{i?x.lineTo(X(i),fy(q)):x.moveTo(X(i),fy(q))});x.stroke()};
+  const line=(ar,col,fy,w)=>{x.strokeStyle=col;x.lineWidth=w||1.1;x.lineJoin='round';x.beginPath();ar.slice(off,end).forEach((q,i)=>{i?x.lineTo(X(i),fy(q)):x.moveTo(X(i),fy(q))});x.stroke()};
   if(IND.ema){
     line(e9,'#3ddc97',Y);line(e21,'#f0a040',Y);
-    sg.filter(t=>t.i>=off).forEach(t=>{
+    sg.filter(t=>t.i>=off&&t.i<end).forEach(t=>{
       const i=t.i-off,z=d[t.i],b=t.t==='BUY',yy=b?Y(z.l)+9:Y(z.h)-9,cx=X(i);
-      x.fillStyle=b?'#00c896':'#ff5c5c';x.beginPath();
+      x.fillStyle=b?UC:DC;x.beginPath();
       if(b){x.moveTo(cx,yy-4);x.lineTo(cx-4,yy+3);x.lineTo(cx+4,yy+3)}
       else{x.moveTo(cx,yy+4);x.lineTo(cx-4,yy-3);x.lineTo(cx+4,yy-3)}
       x.closePath();x.fill();
     });
   }
-  if(IND.scale){
-    const col=buy?'#00c896':'#ff5c5c',ly=Y(last);
+  if(IND.scale&&shift===0){
+    const col=buy?UC:DC,ly=Y(last);
     x.setLineDash([3,3]);x.strokeStyle=col;x.lineWidth=1;x.beginPath();x.moveTo(0,ly);x.lineTo(W-RM,ly);x.stroke();x.setLineDash([]);
     x.fillStyle=col;x.fillRect(W-RM+1,ly-7,RM-2,14);x.fillStyle='#06121f';x.font='bold 9px '+F;x.fillText(dec(last),W-RM+4,ly);
   }
@@ -388,27 +538,55 @@ function render(d){
     x.strokeStyle='#1c2233';x.lineWidth=1;x.beginPath();x.moveTo(0,y0);x.lineTo(W,y0);x.stroke();
     const st={x:PX,y:y0+8};
     if(p==='vol'){
-      const mx=Math.max(...v.map(z=>z.v))||1,lv=v[n-1].v;
+      const mx=Math.max(...v.map(z=>z.v))||1,lv=d[ri].v;
       seg('VOL',MUT,st);seg(lv>=1000?(lv/1000).toFixed(1)+'K':lv.toFixed(2),'#f0b90b',st);
-      v.forEach((z,i)=>{x.fillStyle=z.c>=z.o?'rgba(0,200,150,.7)':'rgba(255,92,92,.7)';const h=Math.max(1,z.v/mx*(bot-top));x.fillRect(X(i)-cw/2,bot-h,cw,h)});
+      v.forEach((z,i)=>{x.fillStyle=z.c>=z.o?UA(.7):DA(.7);const h=Math.max(1,z.v/mx*(bot-top));x.fillRect(X(i)-cw/2,bot-h,cw,h)});
     }
     if(p==='macd'){
-      const sl=ar=>ar.slice(off),mx=Math.max(...sl(dif).map(Math.abs),...sl(dea).map(Math.abs),...sl(his).map(Math.abs))||1;
+      const sl=ar=>ar.slice(off,end),mx=Math.max(...sl(dif).map(Math.abs),...sl(dea).map(Math.abs),...sl(his).map(Math.abs))||1;
       const zy=(top+bot)/2,my=q=>zy-q/mx*(bot-top)/2;
-      seg('MACD',MUT,st);seg('DIF '+dif[dif.length-1].toFixed(2),'#f0b90b',st);seg('DEA '+dea[dea.length-1].toFixed(2),'#e84393',st);seg(his[his.length-1].toFixed(2),'#a78bfa',st);
+      seg('MACD',MUT,st);seg('DIF '+dif[ri].toFixed(2),'#f0b90b',st);seg('DEA '+dea[ri].toFixed(2),'#e84393',st);seg(his[ri].toFixed(2),'#a78bfa',st);
       x.strokeStyle='#1c2233';x.lineWidth=1;x.beginPath();x.moveTo(0,zy);x.lineTo(W-RM,zy);x.stroke();
-      sl(his).forEach((q,i)=>{x.fillStyle=q>=0?'rgba(0,200,150,.75)':'rgba(255,92,92,.75)';x.fillRect(X(i)-cw/2,Math.min(zy,my(q)),cw,Math.max(1,Math.abs(my(q)-zy)))});
+      sl(his).forEach((q,i)=>{x.fillStyle=q>=0?UA(.75):DA(.75);x.fillRect(X(i)-cw/2,Math.min(zy,my(q)),cw,Math.max(1,Math.abs(my(q)-zy)))});
       line(dif,'#f0b90b',my,1);line(dea,'#e84393',my,1);
     }
     if(p==='rsi'){
       const ry=q=>bot-q/100*(bot-top);
-      seg('RSI(6)',MUT,st);seg(rs[rs.length-1].toFixed(2),'#f0b90b',st);
+      seg('RSI(6)',MUT,st);seg(rs[ri].toFixed(2),'#f0b90b',st);
       x.setLineDash([3,3]);x.strokeStyle='#2a3350';x.lineWidth=1;
       [30,70].forEach(q=>{x.beginPath();x.moveTo(0,ry(q));x.lineTo(W-RM,ry(q));x.stroke()});x.setLineDash([]);
       if(IND.scale){x.fillStyle=MUT;x.font='9px '+F;x.fillText('70',W-RM+4,ry(70));x.fillText('30',W-RM+4,ry(30))}
       line(rs,'#f0b90b',ry,1.1);
     }
   });
+
+  /* ---- time axis ---- */
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],p2=q=>String(q).padStart(2,'0'),intra=tf!=='1d';
+  const fT=(ms,full)=>{const q=new Date(ms),dm=p2(q.getDate())+' '+MON[q.getMonth()],hm=p2(q.getHours())+':'+p2(q.getMinutes());return intra?(full?dm+' '+hm:hm):(full?dm+' '+q.getFullYear():dm)};
+  const gap=Math.max(1,Math.ceil(72/step));
+  x.font='9px '+F;x.textAlign='center';x.textBaseline='middle';x.fillStyle=MUT;
+  for(let i=0;i<n;i++){
+    if((off+i)%gap)continue;
+    const cx=X(i);if(cx<24||cx>W-RM-24)continue;
+    const z=d[off+i],pz=d[off+i-1],newDay=intra&&pz&&new Date(pz.t).getDate()!==new Date(z.t).getDate();
+    x.fillText(intra&&newDay?p2(new Date(z.t).getDate())+' '+MON[new Date(z.t).getMonth()]:fT(z.t,false),cx,H-TH/2);
+  }
+  x.textAlign='left';
+  /* ---- crosshair ---- */
+  if(ci>=off&&ci<end){
+    const z=d[ci],cx=X(ci-off),cy=Y(z.c);
+    x.setLineDash([3,3]);x.strokeStyle='#8b93a7';x.lineWidth=.8;
+    x.beginPath();x.moveTo(cx,0);x.lineTo(cx,H-TH);x.moveTo(0,cy);x.lineTo(W-RM,cy);x.stroke();x.setLineDash([]);
+    x.font='bold 9px '+F;
+    const tl=fT(z.t,true),tw=x.measureText(tl).width+10,lx=Math.min(Math.max(cx-tw/2,0),W-tw);
+    x.fillStyle='#2b3350';x.fillRect(lx,H-TH+1,tw,TH-2);x.fillStyle='#fff';x.fillText(tl,lx+5,H-TH/2);
+    if(IND.scale){x.fillStyle='#2b3350';x.fillRect(W-RM+1,cy-7,RM-2,14);x.fillStyle='#fff';x.fillText(dec(z.c),W-RM+4,cy)}
+    const chg=(z.c-z.o)/z.o*100,vf=q=>q>=1e6?(q/1e6).toFixed(2)+'M':q>=1e3?(q/1e3).toFixed(1)+'K':q.toFixed(2);
+    const L=['O '+dec(z.o)+'  H '+dec(z.h),'L '+dec(z.l)+'  C '+dec(z.c),(chg>=0?'+':'')+chg.toFixed(2)+'%  Vol '+vf(z.v)];
+    x.font='9px '+F;const bw=Math.max(...L.map(q=>x.measureText(q).width))+12,bx=cx>(W-RM)/2?PX:W-RM-bw-4;
+    x.fillStyle='rgba(16,20,32,.92)';x.fillRect(bx,4,bw,40);x.strokeStyle='#2b3350';x.setLineDash([]);x.lineWidth=1;x.strokeRect(bx,4,bw,40);
+    L.forEach((q,k)=>{x.fillStyle=k===2?(chg>=0?UC:DC):'#c7ccd1';x.fillText(q,bx+6,12+k*12)});
+  }
 }
 
 
@@ -419,18 +597,82 @@ async function load(){
 
 /* ---------- Clicks ---------- */
 document.addEventListener('click',e=>{
-  const t=e.target;let b;
-  if(b=t.closest('[data-ex]')){ex=b.dataset.ex;save('ex',ex);$('q').value='';showList()}
-  else if(b=t.closest('[data-open]')){coin=b.dataset.open;save('coin',coin);history.pushState({v:'chart'},'');showChart()}
-  else if(b=t.closest('[data-sort]')){sort=b.dataset.sort;buildHead();renderRows()}
-  else if(t.closest('[data-retry]')||t.closest('#rfl'))loadList();
-  else if(b=t.closest('[data-t]')){tf=b.dataset.t;save('tf',tf);buildChips();load()}
-  else if(b=t.closest('[data-ind]')){const k=b.dataset.ind;IND[k]=IND[k]?0:1;save('ind',JSON.stringify(IND));buildChips();if(lastD)render(lastD)}
-  else if(t.closest('#back')){if(history.state&&history.state.v==='chart')history.back();else showList()}
-  else if(t.closest('#rf'))load();
+  const tg=e.target;let b;
+  if(b=tg.closest('[data-fav]')){const c=b.dataset.fav,i=FAV.indexOf(c);if(i<0)FAV.push(c);else FAV.splice(i,1);save('fav',JSON.stringify(FAV));renderRows()}
+  else if(tg.closest('#gear')){showSet(true)}
+  else if(tg.closest('[data-back]')){if(history.state&&(history.state.v==='set'||history.state.v==='doc'))history.back();else if(view==='doc')showSet(false);else showList()}
+  else if(b=tg.closest('[data-lang]')){S.lang=b.dataset.lang;saveS();applyLang()}
+  else if(b=tg.closest('[data-stf]')){tf=b.dataset.stf;save('tf',tf);buildSettings()}
+  else if(b=tg.closest('[data-sind]')){const k=b.dataset.sind;IND[k]=IND[k]?0:1;save('ind',JSON.stringify(IND));buildSettings()}
+  else if(b=tg.closest('[data-svis]')){S.vis=+b.dataset.svis;vis=S.vis;saveS();buildSettings()}
+  else if(b=tg.closest('[data-sspd]')){S.spd=+b.dataset.sspd;saveS();buildSettings()}
+  else if(b=tg.closest('[data-scol]')){S.inv=+b.dataset.scol;saveS();applyColors();buildSettings()}
+  else if(b=tg.closest('[data-sauto]')){S.auto=+b.dataset.sauto;saveS();buildSettings()}
+  else if(b=tg.closest('[data-ssort]')){sort=b.dataset.ssort;save('sort',sort);buildSettings()}
+  else if(b=tg.closest('[data-act]')){
+    const a=b.dataset.act;
+    if(a==='reset'){if(confirm(t('reset_ok'))){const l=S.lang;Object.assign(S,{lang:l,vis:60,spd:1,inv:0,auto:1});saveS();vis=60;tf='5m';save('tf',tf);IND={ema:1,vol:1,macd:1,rsi:1,scale:1};save('ind',JSON.stringify(IND));sort='vol';save('sort',sort);applyColors();buildSettings()}}
+    else showDoc(a,true);
+  }
+  else if(b=tg.closest('[data-ex]')){ex=b.dataset.ex;save('ex',ex);$('q').value='';showList()}
+  else if(b=tg.closest('[data-open]')){coin=b.dataset.open;save('coin',coin);history.pushState({v:'chart'},'');showChart()}
+  else if(b=tg.closest('[data-sort]')){sort=b.dataset.sort;save('sort',sort);buildHead();renderRows()}
+  else if(tg.closest('[data-retry]')||tg.closest('#rfl'))loadList();
+  else if(b=tg.closest('[data-t]')){tf=b.dataset.t;save('tf',tf);shift=0;cT=null;lastD=null;buildChips();load()}
+  else if(b=tg.closest('[data-ind]')){const k=b.dataset.ind;IND[k]=IND[k]?0:1;save('ind',JSON.stringify(IND));buildChips();if(lastD)render(lastD)}
+  else if(tg.closest('#back')){if(history.state&&history.state.v==='chart')history.back();else showList()}
+  else if(tg.closest('#now')){shift=0;cT=null;if(lastD)render(lastD)}
+  else if(tg.closest('#rf'))load();
 });
+
+/* ---------- Chart gestures: pan / pinch / tap ---------- */
+(function(){
+  const cv=$('c'),P=new Map();
+  let mode=null,sx=0,sShift=0,sVis=0,sDist=0,lp=0,raf=0,lastX=0;
+  const rr=()=>{if(raf||!lastD)return;raf=requestAnimationFrame(()=>{raf=0;if(lastD)render(lastD)})};
+  const geo=()=>{const W=cv.clientWidth,RM=IND.scale?50:9;return{st:(W-9-RM)/vis}};
+  const pick=px=>{
+    if(!lastD)return null;
+    const st=geo().st,end=lastD.length-shift,off=end-vis;
+    const i=Math.max(0,Math.min(vis-1,Math.floor((px-9)/st)));
+    return lastD[off+i]?lastD[off+i].t:null;
+  };
+  const dist=()=>{const a=[...P.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1};
+  cv.addEventListener('pointerdown',e=>{
+    try{cv.setPointerCapture(e.pointerId)}catch(_){}
+    P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const r=cv.getBoundingClientRect();lastX=e.clientX-r.left;
+    if(P.size===1){
+      mode='tap';sx=e.clientX;sShift=shift;
+      clearTimeout(lp);
+      lp=setTimeout(()=>{if(mode==='tap'){mode='cross';const t=pick(lastX);if(t!=null){cT=t;rr()}}},380);
+    }else if(P.size===2){clearTimeout(lp);mode='pinch';sDist=dist();sVis=vis}
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(!P.has(e.pointerId))return;
+    P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const r=cv.getBoundingClientRect();lastX=e.clientX-r.left;
+    if(mode==='pinch'&&P.size===2){vis=Math.round(sVis*sDist/dist());rr()}
+    else if(mode==='tap'&&Math.abs(e.clientX-sx)>8){clearTimeout(lp);mode='pan'}
+    if(mode==='pan'){shift=sShift+Math.round((e.clientX-sx)/geo().st);rr()}
+    else if(mode==='cross'){const t=pick(lastX);if(t!=null){cT=t;rr()}}
+  });
+  const up=(e,cancel)=>{
+    if(!P.has(e.pointerId))return;
+    clearTimeout(lp);
+    if(mode==='tap'&&!cancel){const t=pick(lastX);cT=(t!=null&&t!==cT)?t:null;rr()}
+    P.delete(e.pointerId);
+    mode=null;
+  };
+  cv.addEventListener('pointerup',e=>up(e,false));
+  cv.addEventListener('pointercancel',e=>up(e,true));
+  cv.addEventListener('contextmenu',e=>e.preventDefault());
+})();
 $('q').addEventListener('input',renderRows);
-window.addEventListener('popstate',()=>{if(view==='chart')showList()});
+window.addEventListener('popstate',e=>{
+  const v=e.state&&e.state.v;
+  if(v==='set')showSet(false);else if(v==='doc')showDoc(docKey,false);else if(view!=='list')showList();
+});
 /* Logo na mile to coin ka pehla harf dikhao */
 document.addEventListener('error',e=>{
   const i=e.target;if(!i||i.tagName!=='IMG'||!i.dataset.l)return;
@@ -439,9 +681,9 @@ document.addEventListener('error',e=>{
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(view==='chart'&&lastD)render(lastD)},250)});
 
 /* ---------- Shuru ---------- */
-showList();
+applyColors();applyLang();showList();
 let tick=0;
-setInterval(()=>{if(document.hidden)return;tick++;if(view==='chart')load();else if(tick%3===0)loadList()},10000); // chart 10s, list 30s
+setInterval(()=>{if(document.hidden||!S.auto)return;tick++;if(view==='chart')load();else if(view==='list'&&tick%3===0)loadList()},10000); // chart 10s, list 30s
 </script>
 </body>
 </html>
