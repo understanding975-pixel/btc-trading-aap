@@ -1,5 +1,7 @@
-self.addEventListener('install', e => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+  const r = e.request;
+  if (r.method !== 'GET' || new URL(r.url).origin !== self.location.origin) return;
+  e.respondWith(fetch(r, { cache: 'no-store' }));
 });
